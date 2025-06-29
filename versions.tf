@@ -12,9 +12,9 @@ terraform {
         bucket = "kdg-aws-2025-matsushita"
         key    = "iam/terraform.tfstate"
         region = "ap-northeast-1"
+        # tfstate の暗号化を有効にする
         encrypt = true
     }
 }
 
 
-# encrypt = trueは暗号化をしている
