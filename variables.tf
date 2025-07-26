@@ -27,5 +27,7 @@ variable "db_password" {
   description = "matsutake404"
 }
 
-
-
+variable "myhome_global_ip_adress" {
+  description = "自宅のグローバルIPアドレス"
+  type        = string
+}
