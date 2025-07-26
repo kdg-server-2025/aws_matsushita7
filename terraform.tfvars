@@ -3,8 +3,3 @@ ssh_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEJzTOEAnBrNHn6871DPNgBclekiUOqsP
 
 db_username = "macha"
 db_password = "matsutake404"
-
-subnet_ids = [
-  "subnet-0abcd1234ef567890", # ← private_a のID
-  "subnet-0abcd9876ef543210"  # ← private_c のID
-]
