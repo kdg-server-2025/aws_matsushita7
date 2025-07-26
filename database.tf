@@ -12,26 +12,7 @@
 
 # }
 
-# resource "aws_security_group" "rds" {
-#   description = "Allow access to RDS"
-#   name        = "rds"
-#   vpc_id      = aws_vpc.main.id
 
-#   ingress {
-#     protocol    = "tcp"
-#     from_port   = 5432
-#     to_port     = 5432
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-# }
 
 resource "aws_db_instance" "postgres" {
   identifier              = "macha-db"

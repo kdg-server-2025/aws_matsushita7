@@ -61,7 +61,8 @@ resource "aws_vpc_security_group_ingress_rule" "rds_enable" {
   security_group_id = aws_security_group.rds_enable.id
 
   # 不正アクセス等の懸念があるため既知のIPからのみアクセスを許可する
-  cidr_ipv4   = "159.28.73.109/32" # バンタンのIP
+  # cidr_ipv4   = "159.28.73.109/32" # バンタンのIP
+  cidr_ipv4   = "153.242.79.132/32" # 自宅のIP。/32は、IPアドレス一つだけ許可するという意味
   from_port   = 5432
   ip_protocol = "tcp"
   to_port     = 5432
@@ -76,7 +77,8 @@ resource "aws_vpc_security_group_egress_rule" "rds_enable_any" {
   security_group_id = aws_security_group.rds_enable.id
 
   # 不正アクセス等の懸念があるため既知のIPからのみアクセスを許可する
-  cidr_ipv4 = "159.28.73.109/32" # バンタンのIP
+  # cidr_ipv4 = "159.28.73.109/32" # バンタンのIP
+  cidr_ipv4 = "153.242.79.132/32" # 自宅のIP
   # any
   ip_protocol = "-1"
 
