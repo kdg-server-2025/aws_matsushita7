@@ -27,3 +27,14 @@ resource "aws_subnet" "private_c" {
     Name = "private-subnet-c"
   }
 }
+
+resource "aws_subnet" "public_a" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.0.0/24"
+  availability_zone       = "ap-northeast-1a"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-subnet-a"
+  }
+}
