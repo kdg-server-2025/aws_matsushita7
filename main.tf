@@ -1,99 +1,36 @@
-# プロバイダーはAWSを使用
 provider "aws" {
-  region  = "ap-northeast-1"
-  profile = "default"
+    region = "ap-northeast-1"
 }
 
-# S3バケットを生成
-# CI/CD側でlambdaのソースコードを格納するための箱
-# resource "aws_s3_bucket" "lambda_artifacts" {
-#   bucket = "kdg-aws-matsushita7-lambda-artifacts"
-#   force_destroy = true
-#   tags = {
-#     Name = "kdg-aws-matsushita7-lambda-artifacts"
-#   }
-# }
-
-# ロールを生成
-# resource "aws_iam_role" "lambda" {
-#   name = "iam_for_lambda"
-
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Action = "sts:AssumeRole",
-#         Principal = {
-#           Service = "lambda.amazonaws.com"
-#         },
-#         Effect = "Allow",
-#         Sid    = ""
-#       }
-#     ]
-#   })
-# }
-
-
-# CloudWatch Logsへの書き込み権限を付与
-resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role       = aws_iam_role.lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+resource "aws_sns_topic" "budget_alert_topic" {
+    name = "budget-alert-topic"
 }
 
-# GetAccountSettings の権限をインラインポリシーとして付与
-resource "aws_iam_role_policy" "get_account_settings" {
-  name = "GetAccountSettingsPermission"
-  role = aws_iam_role.lambda.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action   = "lambda:GetAccountSettings"
-        Effect   = "Allow"
-        Resource = "*"
-      },
-    ]
-  })
+resource "aws_sns_topic_subscription" "budget_email" {
+    topic_arn = aws_sns_topic.budget_alert_topic.arn
+    protocol  = "email"
+    endpoint  = "yutaro.matsushita0402@gmail.com"
 }
 
-
-# 初回のみ利用する空のLambdaのファイルを生成
-# data "archive_file" "initial_lambda_package" {
-#   type        = "zip"
-#   output_path = "${path.module}/.temp_files/lambda.zip"
-#   source {
-#     content  = "# empty"
-#     filename = "hoge.txt"
-#   }
-# }
-
-# (初回のみ)空のLambdaのファイルをS3にアップロード
-# resource "aws_s3_object" "lambda_file" {
-#   bucket = aws_s3_bucket.lambda_artifacts.id
-#   key    = "initial.zip"
-#   source = "${path.module}/.temp_files/lambda.zip"
-# }
-
-# Lambda関数を生成
-# resource "aws_lambda_function" "first_function" {
-#   function_name = "first-function"
-#   role          = aws_iam_role.lambda.arn
-#   handler       = "main.handler"
-#   runtime       = "provided.al2023"
-#   timeout       = 120
-#   publish       = true
-#   s3_bucket     = aws_s3_bucket.lambda_artifacts.id
-#   s3_key        = aws_s3_object.lambda_file.key
-# }
-
-# 外部からリクエストを飛ばすためのエンドポイント
-resource "aws_lambda_function_url" "first_function" {
-  function_name      = aws_lambda_function.first_function.function_name
-  authorization_type = "NONE"
+locals {
+    budget_limits = [1, 5, 10]
 }
 
-# リクエストを出す時のURLを見る用
-output "lambda_function_url" {
-  value = aws_lambda_function_url.first_function.function_url
+resource "aws_budgets_budget" "monthly_budget" {
+    for_each = toset([for v in local.budget_limits : tostring(v)])
+
+    name              = "monthly-cost-budget-${each.value}"
+    budget_type       = "COST"
+    limit_amount      = "0.01"           # 月の予算をUSDで設定
+    limit_unit        = "USD"           
+    time_unit         = "MONTHLY"       # 月ごとにコストを追跡
+    time_period_start = "2025-01-01_00:00"
+
+    notification {
+    comparison_operator = "GREATER_THAN"
+    notification_type   = "ACTUAL"   
+    threshold           = 80.0        # 80%を超えた場合にアラート
+    threshold_type      = "PERCENTAGE"
+    subscriber_sns_topic_arns  = [aws_sns_topic.budget_alert_topic.arn]
+    }
 }

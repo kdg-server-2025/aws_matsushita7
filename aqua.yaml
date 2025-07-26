@@ -13,4 +13,3 @@ registries:
 packages:
 - name: hashicorp/terraform@v1.11.4
 - name: aws/aws-cli@2.27.12
-- name: aws/aws-cli@2.27.12
